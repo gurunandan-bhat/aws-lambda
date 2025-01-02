@@ -36,10 +36,14 @@ func categoryProducts(ctx context.Context, event events.APIGatewayV2HTTPRequest)
 	if !ok {
 		return nil, fmt.Errorf("required parameter category url is required")
 	}
-
+	ctStatus, ok := event.QueryStringParameters["ctStatus"]
+	if !ok {
+		ctStatus = "PA"
+	}
 	condCat := expression.Key("VCategoryURLName").Equal(expression.Value(catUrl))
-	condStatus := expression.Key("CTypeStatus").Equal(expression.Value("PA"))
+	condStatus := expression.Key("CTypeStatus").BeginsWith(ctStatus)
 	cond := expression.KeyAnd(condCat, condStatus)
+
 	expr, err := expression.NewBuilder().WithKeyCondition(cond).Build()
 	if err != nil {
 		return nil, fmt.Errorf("error generating expression: %s", err)
